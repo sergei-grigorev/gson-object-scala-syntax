@@ -10,7 +10,7 @@ you should be added it by yourself to your library dependencies.
 [![Coverage Status](https://coveralls.io/repos/github/SergeyGrigorev/gson-object-scala-syntax/badge.svg?branch=master)](https://coveralls.io/github/SergeyGrigorev/gson-object-scala-syntax?branch=master)
 
 # Requirements
-*  sbt 1.0+
+* sbt 1.0+
 * java 8+
 * scala 2.11 and scala 2.12
 
@@ -55,7 +55,7 @@ assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2))
 You can use any of Scala case classes and they will be
 automatically derived by shapeless library.
 
-# Licence
+# License
 
 Copyright (c) 2017 Sergey Grigorev
 
