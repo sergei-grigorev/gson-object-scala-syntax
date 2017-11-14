@@ -16,7 +16,7 @@
 
 package com.github.sergeygrigorev.util.instances
 
-import com.github.sergeygrigorev.util.data.{ElementDecoder, FieldDecoder}
+import com.github.sergeygrigorev.util.data.ElementDecoder
 import com.github.sergeygrigorev.util.data.ElementDecoder.primitive
 
 /**

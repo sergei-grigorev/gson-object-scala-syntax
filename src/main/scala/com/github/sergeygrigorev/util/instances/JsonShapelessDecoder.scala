@@ -32,10 +32,10 @@ trait JsonShapelessDecoder {
     primitive[HNil](_ => HNil)
 
   implicit def hlistDecoder[K <: Symbol, H, T <: HList](
-                                                         implicit
-                                                         witness: Witness.Aux[K],
-                                                         hDecoder: Lazy[FieldDecoder[H]],
-                                                         tDecoder: ElementDecoder[T]): ElementDecoder[FieldType[K, H] :: T] = {
+    implicit
+    witness: Witness.Aux[K],
+    hDecoder: Lazy[FieldDecoder[H]],
+    tDecoder: ElementDecoder[T]): ElementDecoder[FieldType[K, H] :: T] = {
 
     val fieldName = witness.value.name
     primitive[FieldType[K, H] :: T] {
@@ -54,10 +54,15 @@ trait JsonShapelessDecoder {
     }
 
   type CoproductMapType = Map[String, ElementDecoder[_]]
-  trait CoproductMap[F] { def map: CoproductMapType }
+
+  trait CoproductMap[F] {
+    def map: CoproductMapType
+  }
 
   implicit val cnilMap: CoproductMap[CNil] =
-    new CoproductMap[CNil] { override val map: CoproductMapType = Map.empty }
+    new CoproductMap[CNil] {
+      override val map: CoproductMapType = Map.empty
+    }
 
   implicit def coproductMap[K <: Symbol, H, T <: Coproduct](
     implicit
