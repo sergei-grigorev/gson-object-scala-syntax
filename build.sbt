@@ -2,7 +2,6 @@ lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
       organization := "com.github.sergeygrigorev",
-      scalaVersion := "2.12.3",
       version := "0.3.0-SNAPSHOT"
     )),
     name := "gson-object-scala-syntax",
@@ -20,6 +19,8 @@ lazy val root = (project in file(".")).
         Opts.resolver.sonatypeStaging
     ),
 
+    crossSbtVersions := Vector("0.13.16", "1.0.2"),
+    crossScalaVersions := Seq("2.11.12", "2.12.4"),
 
     libraryDependencies ++= Seq(
       "com.google.code.gson" % "gson" % "2.8.2" % "provided",
