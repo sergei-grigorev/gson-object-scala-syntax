@@ -6,4 +6,3 @@ scala:
 jdk:
   - oraclejdk8
   - oraclejdk9
-  - openjdk7

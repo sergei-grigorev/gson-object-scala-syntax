@@ -1,9 +1,21 @@
 # gson-object-scala-syntax
 
-Pure and safe type-inference syntax for work 
-with [https://github.com/google/gson](com.google.gson.JsonObject).
+Pure and safe type-inference syntax to work 
+with [Google Gson library](com.google.gson.JsonObject).
 
-## Simple examples of usage.
+**Notice**: library dependencies don't link google gson library and
+you should be added it by yourself to your library dependencies.
+
+[![Build Status](https://travis-ci.org/SergeyGrigorev/gson-object-scala-syntax.svg?branch=master)](https://travis-ci.org/SergeyGrigorev/gson-object-scala-syntax)
+
+# Requirements
+*  sbt 1.0+
+* java 8+
+
+## Usage
+Information will be available a little bit later.
+
+## Example
 ```
 import com.github.sergeygrigorev.helpers.instances.gson._
 import com.github.sergeygrigorev.helpers.syntax.gson._
@@ -40,3 +52,9 @@ assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2))
 
 You can use any of Scala case classes and they will be
 automatically derived by shapeless library.
+
+# Licence
+
+Copyright (c) 2017 Sergey Grigorev
+
+Published under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
