@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 Current unreleased snapshot version is 0.3.0-SHAPSHOT
 
 ## [Unreleased]
+
+## [0.3.0] - 2017-11-14
 ### Added
-- sbt build for a project
 - convert JsonObject to any Scala primitives and case classes, list, map
+- sbt build for a project and plugins to release, format
 - unit tests used as examples
 
 ### Changed
