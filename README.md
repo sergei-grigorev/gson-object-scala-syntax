@@ -14,7 +14,7 @@ you should be added it by yourself to your library dependencies.
 # Requirements
 * sbt 0.13 or 1.0
 * JVM 8 or JVM 9
-* scala 2.11 or scala 2.12
+* Scala 2.11 or Scala 2.12
 
 ## Usage
 To start using library just add it to your project (update version to the last from a badge above). See examples below.
