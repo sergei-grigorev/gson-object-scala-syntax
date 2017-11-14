@@ -8,19 +8,45 @@ you should be added it by yourself to your library dependencies.
 
 [![Build Status](https://travis-ci.org/SergeyGrigorev/gson-object-scala-syntax.svg?branch=master)](https://travis-ci.org/SergeyGrigorev/gson-object-scala-syntax)
 [![Coverage Status](https://coveralls.io/repos/github/SergeyGrigorev/gson-object-scala-syntax/badge.svg?branch=master)](https://coveralls.io/github/SergeyGrigorev/gson-object-scala-syntax?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.sergeygrigorev/gson-object-scala-syntax_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.sergeygrigorev/gson-object-scala-syntax_2.12)
+
 
 # Requirements
-* sbt 1.0+
-* java 8+
-* scala 2.11 and scala 2.12
+* sbt 0.13 or 1.0
+* JVM 8 or JVM 9
+* scala 2.11 or scala 2.12
 
 ## Usage
-Information will be available a little bit later.
+To start using library just add it to your project (update version to the last from a badge above). See examples below.
+
+### Sbt
+```
+libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.3.0"
+
+```
+
+### Maven
+```
+<!-- Scala 2.12 -->
+<dependency>
+    <groupId>com.github.sergeygrigorev</groupId>
+    <artifactId>gson-object-scala-syntax_2.12</artifactId>
+    <version>0.3.0</version>
+</dependency>
+
+<!-- Scala 2.11 -->
+<dependency>
+    <groupId>com.github.sergeygrigorev</groupId>
+    <artifactId>gson-object-scala-syntax_2.11</artifactId>
+    <version>0.3.0</version>
+</dependency>
+
+```
 
 ## Example
 ```
-import com.github.sergeygrigorev.helpers.instances.gson._
-import com.github.sergeygrigorev.helpers.syntax.gson._
+import com.github.sergeygrigorev.util.instances.gson._
+import com.github.sergeygrigorev.util.syntax.gson._
 
 // use scala primitive
 val jsonObject = new JsonParser().parse("{a: null}").getAsJsonObject
@@ -32,9 +58,11 @@ assert(jsonObject.getAs[List[Int]]("a") == List(1, 2, 3))
 
 // manually define format
 case class CustomType(byte: Byte, int: Int)
-import com.github.sergeygrigorev.helpers.data.ElementParser
-import com.github.sergeygrigorev.helpers.data.ElementParser._
-implicit val customTypeParser: ElementParser[CustomType] = primitive[CustomType] {
+
+import com.github.sergeygrigorev.util.data.ElementDecoder
+import com.github.sergeygrigorev.util.data.ElementDecoder._
+
+implicit val customTypeParser: ElementDecoder[CustomType] = primitive[CustomType] {
   case root: JsonObject =>
     val byte = root.getAs[Byte]("byte")
     val int = root.getAs[Int]("int")
@@ -52,8 +80,8 @@ val jsonObject = new JsonParser().parse("{a: { long: 1, double: 2 } }").getAsJso
 assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2))
 ```
 
-You can use any of Scala case classes and they will be
-automatically derived by shapeless library.
+You can use Scala case classes, tuples, lists, maps, and they will be
+automatically derived by shapeless library and/or corresponding decoders.
 
 # License
 
