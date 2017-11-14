@@ -7,10 +7,12 @@ with [Google Gson library](com.google.gson.JsonObject).
 you should be added it by yourself to your library dependencies.
 
 [![Build Status](https://travis-ci.org/SergeyGrigorev/gson-object-scala-syntax.svg?branch=master)](https://travis-ci.org/SergeyGrigorev/gson-object-scala-syntax)
+[![Coverage Status](https://coveralls.io/repos/github/SergeyGrigorev/gson-object-scala-syntax/badge.svg?branch=master)](https://coveralls.io/github/SergeyGrigorev/gson-object-scala-syntax?branch=master)
 
 # Requirements
 *  sbt 1.0+
 * java 8+
+* scala 2.11 and scala 2.12
 
 ## Usage
 Information will be available a little bit later.
