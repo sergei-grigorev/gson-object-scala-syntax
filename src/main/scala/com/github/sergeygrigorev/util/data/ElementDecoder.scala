@@ -25,6 +25,7 @@ trait ElementDecoder[A] {
 object ElementDecoder {
   def apply[A](implicit t: ElementDecoder[A]): ElementDecoder[A] = t
 
-  def primitive[A](f: JsonElement => A): ElementDecoder[A] =
-    (json: JsonElement) => f(json)
+  def primitive[A](f: JsonElement => A): ElementDecoder[A] = new ElementDecoder[A] {
+    override def decode(json: JsonElement): A = f(json)
+  }
 }

@@ -25,7 +25,7 @@ trait FieldDecoder[A] {
 object FieldDecoder {
   def apply[A](implicit t: FieldDecoder[A]): FieldDecoder[A] = t
 
-  def construct[A](f: (JsonObject, String) => A): FieldDecoder[A] = (json: JsonObject, field: String) => {
-    f(json, field)
+  def construct[A](f: (JsonObject, String) => A): FieldDecoder[A] = new FieldDecoder[A] {
+    override def decode(json: JsonObject, field: String): A = f(json, field)
   }
 }
