@@ -11,8 +11,9 @@ lazy val root = (project in file(".")).
 
     pomIncludeRepository := { _ => false },
     publishArtifact in Test := false,
+
     useGpg := true,
-    releaseCrossBuild := true,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
 
     publishTo := Some(
       if (isSnapshot.value)
@@ -23,6 +24,7 @@ lazy val root = (project in file(".")).
 
     crossSbtVersions := Vector("0.13.16", "1.0.2"),
     crossScalaVersions := Seq("2.11.12", "2.12.4"),
+    releaseCrossBuild := true,
 
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,              // : ReleaseStep
