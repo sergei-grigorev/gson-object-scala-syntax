@@ -21,7 +21,7 @@ To start using library just add it to your project (update version to the last f
 
 ### Sbt
 ```
-libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.3.0"
+libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.3.1"
 
 ```
 
@@ -31,14 +31,14 @@ libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax"
 <dependency>
     <groupId>com.github.sergeygrigorev</groupId>
     <artifactId>gson-object-scala-syntax_2.12</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
 </dependency>
 
 <!-- Scala 2.11 -->
 <dependency>
     <groupId>com.github.sergeygrigorev</groupId>
     <artifactId>gson-object-scala-syntax_2.11</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
 </dependency>
 
 ```
