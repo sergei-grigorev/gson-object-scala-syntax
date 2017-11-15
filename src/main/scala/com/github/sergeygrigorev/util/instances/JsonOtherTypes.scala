@@ -22,11 +22,13 @@ import com.github.sergeygrigorev.util.data.ElementDecoder.primitive
 /**
  * Some often usage classes in Scala.
  */
-trait JsonScalaTypeParsers {
-  /* additionally string */
+trait JsonOtherTypes {
   implicit val stringPrimitiveParser: ElementDecoder[String] =
-    primitive[String] { json =>
-      val res = json.getAsString
-      if (res.nonEmpty) res else null
-    }
+    primitive[String](json => json.getAsString)
+
+  implicit val bigDecimalPrimitiveParser: ElementDecoder[BigDecimal] =
+    primitive[BigDecimal](json => json.getAsBigDecimal)
+
+  implicit val bigIntegerPrimitiveParser: ElementDecoder[BigInt] =
+    primitive[BigInt](json => json.getAsBigInteger)
 }

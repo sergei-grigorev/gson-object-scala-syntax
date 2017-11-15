@@ -18,8 +18,9 @@ package com.github.sergeygrigorev.util
 
 package object instances {
   object gson
-    extends JsonObjectParserInstances
-    with JsonPrimitiveParsers
+    extends JsonPrimitives
+    with JsonObjects
     with JsonShapelessDecoder
-    with JsonScalaTypeParsers
+    with JsonCollections
+    with JsonOtherTypes
 }
