@@ -26,7 +26,7 @@ import org.scalatest.FlatSpec
  */
 class JsonObjectOpsTest extends FlatSpec {
 
-  "a json decoder" should "decode all primitives" in {
+  "a json decoder" should "decode all jvm primitives" in {
     val pattern = JsonObjectOpsTest.Primitives(
       boolean = true,
       byte = Byte.MaxValue,
@@ -50,44 +50,52 @@ class JsonObjectOpsTest extends FlatSpec {
     assert(jsonObject.getAs[Double]("double") == pattern.double)
   }
 
+  it should "decode some other simple types" in {
+    val jsonObject = parse("""{string: "string", number: 10, object: {} }""")
+    assert(jsonObject.getAs[JsonObject]("object") == jsonObject.get("object"))
+    assert(jsonObject.getAs[String]("string") == "string")
+    assert(jsonObject.getAs[BigDecimal]("number") == BigDecimal(10))
+    assert(jsonObject.getAs[BigInt]("number") == BigInt(10))
+  }
+
   it should "decode optional values" in {
-    val jsonObject = new JsonParser().parse("{a: null}").getAsJsonObject
+    val jsonObject = parse("{a: null}")
     assert(jsonObject.find[Int]("b").isEmpty)
   }
 
   it should "decode list of primitives" in {
-    val jsonObject = new JsonParser().parse("{a: [1, 2, 3] }").getAsJsonObject
+    val jsonObject = parse("{a: [1, 2, 3] }")
     assert(jsonObject.getAs[List[Int]]("a") == List(1, 2, 3))
   }
 
   it should "decode map of primitives" in {
-    val jsonObject = new JsonParser().parse("{a: { b: 1, c: 2 } }").getAsJsonObject
+    val jsonObject = parse("{a: { b: 1, c: 2 } }")
     assert(jsonObject.getAs[Map[String, Int]]("a") == Map("b" -> 1, "c" -> 2))
   }
 
   it should "decode custom type with manually created format" in {
-    val jsonObject = new JsonParser().parse("{a: { byte: 1, int: 2 } }").getAsJsonObject
+    val jsonObject = parse("{a: { byte: 1, int: 2 } }")
     assert(jsonObject.getAs[JsonObjectOpsTest.CustomType]("a") == JsonObjectOpsTest.CustomType(1, 2))
   }
 
   it should "decode custom type" in {
-    case class CustomType2(long: Long, double: Double)
-    val jsonObject = new JsonParser().parse("{a: { long: 1, double: 2 } }").getAsJsonObject
-    assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2))
+    case class CustomType2(long: Long, double: Double, list: List[Int])
+    val jsonObject = parse("{a: { long: 1, double: 2, list: [3, 4] } }")
+    assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2, List(3, 4)))
   }
 
   it should "decode custom type with optional fields" in {
     case class CustomType2(long: Option[Long], double: Option[Double])
-    val jsonObject = new JsonParser().parse("{a: { long: 1, double: 2 } }").getAsJsonObject
+    val jsonObject = parse("{a: { long: 1, double: 2 } }")
     assert(jsonObject.getAs[CustomType2]("a") == CustomType2(Some(1), Some(2)))
 
-    val jsonObject2 = new JsonParser().parse("{a: { } }").getAsJsonObject
+    val jsonObject2 = parse("{a: { } }")
     assert(jsonObject2.getAs[CustomType2]("a") == CustomType2(None, None))
   }
 
   it should "decode custom option type" in {
     case class CustomType2(long: Long, double: Double)
-    val jsonObject = new JsonParser().parse("{a: { long: 1, double: 2 } }").getAsJsonObject
+    val jsonObject = parse("{a: { long: 1, double: 2 } }")
     assert(jsonObject.find[CustomType2]("a").contains(CustomType2(1, 2)))
   }
 
@@ -95,7 +103,7 @@ class JsonObjectOpsTest extends FlatSpec {
     sealed trait CustomTrait
     case class CustomType1(long: Long) extends CustomTrait
     case class CustomType2(int: Int) extends CustomTrait
-    val jsonObject = new JsonParser().parse("{a: { type: \"CustomType2\", int: 2} }").getAsJsonObject
+    val jsonObject = parse("{a: { type: \"CustomType2\", int: 2} }")
     assert(jsonObject.getAs[CustomTrait]("a") == CustomType2(2))
   }
 
@@ -103,8 +111,47 @@ class JsonObjectOpsTest extends FlatSpec {
     sealed trait CustomTrait
     case class CustomType1(long: Long) extends CustomTrait
     case class CustomType2(int: Int) extends CustomTrait
-    val jsonObject = new JsonParser().parse("{b: { type: \"CustomType2\", int: 2} }").getAsJsonObject
+    val jsonObject = parse("{b: { type: \"CustomType2\", int: 2} }")
     assert(jsonObject.find[CustomTrait]("a").isEmpty)
+  }
+
+  it should "correctly throw expected exceptions on empty elements" in {
+    val jsonObject = parse("""{}""")
+    // field is not found
+    assertThrows[IllegalArgumentException](jsonObject.getAs[String]("nonexistent_field"))
+    // nonexistent list couldn't be empty
+    assertThrows[IllegalArgumentException](jsonObject.getAs[List[String]]("nonexistent_field"))
+    // nonexistent map couldn't be empty
+    assertThrows[IllegalArgumentException](jsonObject.getAs[Map[String, String]]("nonexistent_field"))
+  }
+
+  it should "correctly throw expected exceptions on elements having incorrect types" in {
+    val jsonObject = parse("""{string: "string"}""")
+    assertThrows[IllegalArgumentException](jsonObject.getAs[Map[String, String]]("string"))
+    assertThrows[IllegalArgumentException](jsonObject.getAs[List[String]]("string"))
+    assertThrows[IllegalArgumentException](jsonObject.getAs[JsonObject]("string"))
+  }
+
+  it should "correctly throw expected in HList code generation instances" in {
+    case class CustomType1(a: String)
+    val jsonObject = parse("""{field: { string: "" } } """)
+    assertThrows[IllegalArgumentException](jsonObject.getAs[CustomType1]("field"))
+  }
+
+  it should "correctly throw expected in Coproduct if object has no type or unknown" in {
+    sealed trait CustomTrait
+    case class CustomType1(long: Long) extends CustomTrait
+    case class CustomType2(int: Int) extends CustomTrait
+    val jsonObject = parse("{field: { int: 2} }")
+    assertThrows[IllegalArgumentException](jsonObject.getAs[CustomTrait]("field"))
+
+    val jsonObject2 = parse("{field: { type: \"CustomType3\", int: 2} }")
+    val unknownType = intercept[IllegalArgumentException](jsonObject2.getAs[CustomTrait]("field"))
+    assert(unknownType.getMessage.contains("unknown type"))
+  }
+
+  def parse(json: String): JsonObject = {
+    new JsonParser().parse(json).getAsJsonObject
   }
 }
 

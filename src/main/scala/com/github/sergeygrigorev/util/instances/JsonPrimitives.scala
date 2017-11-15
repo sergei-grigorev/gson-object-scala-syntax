@@ -22,16 +22,10 @@ import com.github.sergeygrigorev.util.data.ElementDecoder.primitive
 /**
  * Scala primitives.
  */
-trait JsonPrimitiveParsers {
+trait JsonPrimitives {
 
   implicit val booleanPrimitiveParser: ElementDecoder[Boolean] =
     primitive[Boolean](json => json.getAsBoolean)
-
-  implicit val bigDecimalPrimitiveParser: ElementDecoder[BigDecimal] =
-    primitive[BigDecimal](json => json.getAsBigDecimal)
-
-  implicit val bigIntegerPrimitiveParser: ElementDecoder[BigInt] =
-    primitive[BigInt](json => json.getAsBigInteger)
 
   implicit val intPrimitiveParser: ElementDecoder[Int] =
     primitive[Int](json => json.getAsInt)
