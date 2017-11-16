@@ -17,7 +17,7 @@
 package com.github.sergeygrigorev.util.instances
 
 import com.github.sergeygrigorev.util.data.{ ElementDecoder, FieldDecoder }
-import com.google.gson.JsonObject
+import com.google.gson.{ JsonArray, JsonElement, JsonObject, JsonPrimitive }
 
 import scala.language.higherKinds
 
@@ -25,36 +25,26 @@ import scala.language.higherKinds
  * More specific decoders for [[FieldDecoder]].
  */
 trait JsonObjects {
-  import FieldDecoder.construct
   import ElementDecoder.primitive
 
   implicit val jsonObjectDecoder: ElementDecoder[JsonObject] =
     primitive[JsonObject] {
       case j: JsonObject => j
-      case json => throw new IllegalArgumentException(s"element couldn't be decoded as object ($json)")
+      case json => throw new IllegalArgumentException(s"couldn't be decoded as JsonObject ($json)")
     }
 
-  implicit def jsonElementToFieldDecoder[T: ElementDecoder]: FieldDecoder[T] =
-    construct[T] { (json: JsonObject, field: String) =>
-      if (json.has(field)) ElementDecoder[T].decode(json.get(field))
-      else throw new IllegalArgumentException(s"element $field is null and couldn't be decoded ($json)")
+  implicit val jsonElementDecoder: ElementDecoder[JsonElement] =
+    primitive[JsonElement] { j: JsonElement => j }
+
+  implicit val jsonArrayDecoder: ElementDecoder[JsonArray] =
+    primitive[JsonArray] {
+      case j: JsonArray => j
+      case json => throw new IllegalArgumentException(s"couldn't be decoded as JsonArray ($json)")
     }
 
-  implicit def jsonCollectionToFieldDecoder[F[_], T](implicit ev: ElementDecoder[F[T]]): FieldDecoder[F[T]] =
-    construct[F[T]] { (json: JsonObject, field: String) =>
-      if (json.has(field)) ev.decode(json.get(field))
-      else throw new IllegalArgumentException(s"element $field is null and couldn't be decoded ($json)")
-    }
-
-  implicit def jsonMapToFieldDecoder[F[_, _], K, V](implicit ev: ElementDecoder[F[K, V]]): FieldDecoder[F[K, V]] =
-    construct[F[K, V]] { (json: JsonObject, field: String) =>
-      if (json.has(field)) ev.decode(json.get(field))
-      else throw new IllegalArgumentException(s"element $field is null and couldn't be decoded ($json)")
-    }
-
-  implicit def optionObjectDecoder[T: FieldDecoder]: FieldDecoder[Option[T]] =
-    construct[Option[T]] { (json: JsonObject, field: String) =>
-      if (json.has(field)) Some(FieldDecoder[T].decode(json, field))
-      else None
+  implicit val jsonPrimitiveDecoder: ElementDecoder[JsonPrimitive] =
+    primitive[JsonPrimitive] {
+      case j: JsonPrimitive => j
+      case json => throw new IllegalArgumentException(s"couldn't be decoded as JsonPrimitive ($json)")
     }
 }
