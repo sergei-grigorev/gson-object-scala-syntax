@@ -27,7 +27,6 @@ import shapeless.{ :+:, ::, CNil, Coproduct, HList, HNil, LabelledGeneric, Lazy,
  * Shapeless decoders.
  */
 trait JsonShapelessDecoder {
-
   implicit def hnilDecoder: ElementDecoder[HNil] =
     primitive[HNil](_ => HNil)
 
@@ -80,12 +79,12 @@ trait JsonShapelessDecoder {
     gen: LabelledGeneric.Aux[A, R],
     map: Lazy[CoproductMap[R]]): ElementDecoder[A] =
     primitive[A] {
-      case j: JsonObject if j.has("type") =>
+      case j: JsonObject =>
         val `type` = FieldDecoder[String].decode(j, "type")
         map.value.map.get(`type`) match {
           case Some(decoder) => decoder.decode(j).asInstanceOf[A]
           case None => throw new IllegalArgumentException(s"unknown type ${`type`} in $j")
         }
-      case e => throw new IllegalArgumentException(s"element $e is not an object")
+      case e => throw new IllegalArgumentException(s"element $e is not an object (or without `type`)")
     }
 }

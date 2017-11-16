@@ -23,4 +23,5 @@ package object instances {
     with JsonShapelessDecoder
     with JsonCollections
     with JsonOtherTypes
+    with JsonElementToJsonDecoder
 }

@@ -18,7 +18,7 @@ package com.github.sergeygrigorev.util
 
 import com.github.sergeygrigorev.util.instances.gson._
 import com.github.sergeygrigorev.util.syntax.gson._
-import com.google.gson.{ Gson, JsonObject, JsonParser }
+import com.google.gson._
 import org.scalatest.FlatSpec
 
 /**
@@ -52,15 +52,23 @@ class JsonObjectOpsTest extends FlatSpec {
 
   it should "decode some other simple types" in {
     val jsonObject = parse("""{string: "string", number: 10, object: {} }""")
-    assert(jsonObject.getAs[JsonObject]("object") == jsonObject.get("object"))
     assert(jsonObject.getAs[String]("string") == "string")
     assert(jsonObject.getAs[BigDecimal]("number") == BigDecimal(10))
     assert(jsonObject.getAs[BigInt]("number") == BigInt(10))
   }
 
+  it should "decode base gson types" in {
+    val jsonObject = parse("""{number: 10, object: {}, array: [1, 2] }""")
+    assert(jsonObject.getAs[JsonObject]("object") == jsonObject.get("object"))
+    assert(jsonObject.getAs[JsonElement]("object") == jsonObject.get("object"))
+    assert(jsonObject.getAs[JsonArray]("array") == jsonObject.getAsJsonArray("array"))
+    assert(jsonObject.getAs[JsonPrimitive]("number") == jsonObject.getAsJsonPrimitive("number"))
+  }
+
   it should "decode optional values" in {
     val jsonObject = parse("{a: null}")
     assert(jsonObject.find[Int]("b").isEmpty)
+    assert(jsonObject.find[JsonObject]("a").isEmpty)
   }
 
   it should "decode list of primitives" in {
@@ -75,13 +83,20 @@ class JsonObjectOpsTest extends FlatSpec {
 
   it should "decode custom type with manually created format" in {
     val jsonObject = parse("{a: { byte: 1, int: 2 } }")
+    import JsonObjectOpsTest.customTypeParser
     assert(jsonObject.getAs[JsonObjectOpsTest.CustomType]("a") == JsonObjectOpsTest.CustomType(1, 2))
   }
 
   it should "decode custom type" in {
-    case class CustomType2(long: Long, double: Double, list: List[Int])
+    case class CustomType2(long: Long, double: Double)
+    val jsonObject = parse("{a: { long: 1, double: 2 } }")
+    assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2))
+  }
+
+  it should "decode custom complicated type" in {
+    case class CustomType2(long: Long, double: Double, list: Option[List[Int]])
     val jsonObject = parse("{a: { long: 1, double: 2, list: [3, 4] } }")
-    assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2, List(3, 4)))
+    assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2, Some(List(3, 4))))
   }
 
   it should "decode custom type with optional fields" in {
@@ -166,7 +181,7 @@ object JsonObjectOpsTest {
     float: Float,
     double: Double)
 
-  case class CustomType(byte: Byte, int: Int)
+  case class CustomType(b: Byte, i: Int)
 
   /* manually created decoder */
   import com.github.sergeygrigorev.util.data.ElementDecoder
