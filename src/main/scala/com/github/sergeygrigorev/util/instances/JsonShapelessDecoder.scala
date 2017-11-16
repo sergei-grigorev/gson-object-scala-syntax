@@ -85,6 +85,6 @@ trait JsonShapelessDecoder {
           case Some(decoder) => decoder.decode(j).asInstanceOf[A]
           case None => throw new IllegalArgumentException(s"unknown type ${`type`} in $j")
         }
-      case e => throw new IllegalArgumentException(s"element $e is not an object (or without `type`)")
+      case e => throw new IllegalArgumentException(s"element $e is not an object")
     }
 }

@@ -141,10 +141,27 @@ class JsonObjectOpsTest extends FlatSpec {
   }
 
   it should "correctly throw expected exceptions on elements having incorrect types" in {
-    val jsonObject = parse("""{string: "string"}""")
+    val jsonObject = parse("""{string: "string", b: {} }""")
     assertThrows[IllegalArgumentException](jsonObject.getAs[Map[String, String]]("string"))
     assertThrows[IllegalArgumentException](jsonObject.getAs[List[String]]("string"))
     assertThrows[IllegalArgumentException](jsonObject.getAs[JsonObject]("string"))
+    assertThrows[IllegalArgumentException](jsonObject.getAs[JsonArray]("string"))
+    assertThrows[IllegalArgumentException](jsonObject.getAs[JsonPrimitive]("b"))
+  }
+
+  it should "correctly throw expected exceptions on elements having incorrect types (Product)" in {
+    case class Inner(long: Long)
+    case class Outer(inner: Inner)
+    val jsonObject = parse("""{b: { inner: 10 } }""")
+    assertThrows[IllegalArgumentException](jsonObject.getAs[Outer]("b"))
+  }
+
+  it should "correctly throw expected exceptions on elements having incorrect types (Coproduct)" in {
+    sealed trait CustomTrait
+    case class CustomType1(long: Long) extends CustomTrait
+    case class CustomType2(int: Int) extends CustomTrait
+    val jsonObject = parse("""{b: 10 }""")
+    assertThrows[IllegalArgumentException](jsonObject.getAs[CustomTrait]("b"))
   }
 
   it should "correctly throw expected in HList code generation instances" in {

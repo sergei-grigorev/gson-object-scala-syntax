@@ -34,10 +34,7 @@ trait JsonObjects {
     }
 
   implicit val jsonElementDecoder: ElementDecoder[JsonElement] =
-    primitive[JsonElement] {
-      case j: JsonElement => j
-      case json => throw new IllegalArgumentException(s"couldn't be decoded as JsonElement ($json)")
-    }
+    primitive[JsonElement] { j: JsonElement => j }
 
   implicit val jsonArrayDecoder: ElementDecoder[JsonArray] =
     primitive[JsonArray] {

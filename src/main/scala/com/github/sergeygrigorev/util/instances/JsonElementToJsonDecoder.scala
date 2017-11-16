@@ -48,8 +48,4 @@ trait JsonElementToJsonDecoder {
   /* Higher Kind type F[T1, T2] */
   implicit def tuple2ToFieldDecoder[F[_, _], T1, T2](implicit ev: ElementDecoder[F[T1, T2]]): FieldDecoder[F[T1, T2]] =
     jsonElementToFieldDecoder(ev)
-
-  /* Higher Kind type F[T1, T2, T3] */
-  implicit def tuple3ToFieldDecoder[F[_, _, _], T1, T2, T3](implicit ev: ElementDecoder[F[T1, T2, T3]]): FieldDecoder[F[T1, T2, T3]] =
-    jsonElementToFieldDecoder(ev)
 }
