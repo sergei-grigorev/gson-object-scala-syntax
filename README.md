@@ -21,7 +21,7 @@ To start using library just add it to your project (update version to the last f
 
 ### Sbt
 ```
-libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.3.1"
+libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.3.2"
 
 ```
 
@@ -31,32 +31,38 @@ libraryDependencies += "com.github.sergeygrigorev" %% "gson-object-scala-syntax"
 <dependency>
     <groupId>com.github.sergeygrigorev</groupId>
     <artifactId>gson-object-scala-syntax_2.12</artifactId>
-    <version>0.3.1</version>
+    <version>0.3.2</version>
 </dependency>
 
 <!-- Scala 2.11 -->
 <dependency>
     <groupId>com.github.sergeygrigorev</groupId>
     <artifactId>gson-object-scala-syntax_2.11</artifactId>
-    <version>0.3.1</version>
+    <version>0.3.2</version>
 </dependency>
 
 ```
 
 ## Example
-```
+```scala
+import com.google.gson.{ JsonParser, JsonObject }
 import com.github.sergeygrigorev.util.instances.gson._
 import com.github.sergeygrigorev.util.syntax.gson._
 
 // use scala primitive
+{
 val jsonObject = new JsonParser().parse("{a: null}").getAsJsonObject
 assert(jsonObject.find[Int]("b").isEmpty)
+}
 
 // use scala list with primitive
+{
 val jsonObject = new JsonParser().parse("{a: [1, 2, 3] }").getAsJsonObject
 assert(jsonObject.getAs[List[Int]]("a") == List(1, 2, 3))
+}
 
 // manually define format
+{
 case class CustomType(byte: Byte, int: Int)
 
 import com.github.sergeygrigorev.util.data.ElementDecoder
@@ -72,16 +78,25 @@ implicit val customTypeParser: ElementDecoder[CustomType] = primitive[CustomType
 
 // impicitly load manually defined format
 val jsonObject = new JsonParser().parse("{a: { byte: 1, int: 2 } }").getAsJsonObject
-assert(jsonObject.getAs[JsonObjectOpsTest.CustomType]("a") == JsonObjectOpsTest.CustomType(1, 2))
+assert(jsonObject.getAs[CustomType]("a") == CustomType(1, 2))
+}
 
 // automatically inlined by shapeless HList
+{
 case class CustomType2(long: Long, double: Double)
 val jsonObject = new JsonParser().parse("{a: { long: 1, double: 2 } }").getAsJsonObject
 assert(jsonObject.getAs[CustomType2]("a") == CustomType2(1, 2))
+}
 ```
 
 You can use Scala case classes, tuples, lists, maps, and they will be
 automatically derived by shapeless library and/or corresponding decoders.
+
+# Possible problems
+
+Q: My custom parser isn't used. Why is that?  
+A: You should import your custom type explicitly by `import MyDecoders._`, otherwise shapeless hlist could be chosen by 
+compiler. 
 
 # License
 
