@@ -20,6 +20,8 @@ import com.github.sergeygrigorev.util.data.ElementDecoder
 import com.google.gson.{ JsonArray, JsonObject }
 
 import scala.collection.JavaConverters._
+import scala.collection.generic.CanBuildFrom
+import scala.language.higherKinds
 
 /**
  * Scala collections.
@@ -27,17 +29,24 @@ import scala.collection.JavaConverters._
 trait JsonCollections {
   import ElementDecoder.primitive
 
-  type StringMap[A] = Map[String, A]
-
-  implicit def jsonListDecoder[T: ElementDecoder]: ElementDecoder[List[T]] =
-    primitive[List[T]] {
-      case j: JsonArray => j.asScala.view.map(ElementDecoder[T].decode(_)).toList
+  implicit def sequenceDecoder[E: ElementDecoder, S[_]](implicit builder: CanBuildFrom[Nothing, E, S[E]]): ElementDecoder[S[E]] =
+    primitive[S[E]] {
+      case j: JsonArray =>
+        val res = builder()
+        val decoder = ElementDecoder[E]
+        for (v <- j.asScala)
+          res.+=(decoder.decode(v))
+        res.result()
       case field => throw new IllegalArgumentException(s"element is not a collection ($field)")
     }
 
-  implicit def hashMapDecoder[T: ElementDecoder]: ElementDecoder[StringMap[T]] =
-    primitive[StringMap[T]] {
-      case j: JsonObject => j.entrySet().asScala.view.map(e => (e.getKey, ElementDecoder[T].decode(e.getValue))).toMap
+  implicit def mapDecoder[T: ElementDecoder, M[_, _]](implicit builder: CanBuildFrom[Nothing, (String, T), M[String, T]]): ElementDecoder[M[String, T]] =
+    primitive[M[String, T]] {
+      case j: JsonObject =>
+        val res = builder()
+        for (e <- j.entrySet().asScala)
+          res += ((e.getKey, ElementDecoder[T].decode(e.getValue)))
+        res.result()
       case field => throw new IllegalArgumentException(s"element couldn't be decodes as a map ($field)")
     }
 }
