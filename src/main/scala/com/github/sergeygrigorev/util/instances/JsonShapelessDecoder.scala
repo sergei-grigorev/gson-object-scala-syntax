@@ -21,12 +21,13 @@ import com.github.sergeygrigorev.util.data.{ ElementDecoder, FieldDecoder }
 import com.github.sergeygrigorev.util.instances.gson._
 import com.google.gson.{ JsonElement, JsonObject }
 import shapeless.labelled.FieldType
-import shapeless.{ :+:, ::, CNil, Coproduct, HList, HNil, LabelledGeneric, Lazy, Witness, labelled }
+import shapeless._
 
 /**
  * Shapeless decoders.
  */
 trait JsonShapelessDecoder {
+  // HList
   implicit def hnilDecoder: ElementDecoder[HNil] =
     primitive[HNil](_ => HNil)
 
@@ -44,47 +45,35 @@ trait JsonShapelessDecoder {
     }
   }
 
-  implicit def genericHListDecoder[A, R <: HList](implicit
+  // Coproduct
+  implicit val cnilDecoder: ElementDecoder[CNil] =
+    primitive[CNil] {
+      case j: JsonObject =>
+        val `type` = FieldDecoder[String].decode(j, "type")
+        throw new IllegalArgumentException(s"unknown type ${`type`} in $j")
+    }
+
+  implicit def coproductDecoder[K <: Symbol, H, T <: Coproduct](
+    implicit
+    witness: Witness.Aux[K],
+    hDecoder: Lazy[ElementDecoder[H]],
+    tDecoder: ElementDecoder[T]): ElementDecoder[FieldType[K, H] :+: T] = {
+
+    val fieldName = witness.value.name
+    primitive[FieldType[K, H] :+: T] {
+      case j: JsonObject =>
+        val `type` = FieldDecoder[String].decode(j, "type")
+        if (`type` == fieldName) Inl(labelled.field[K](hDecoder.value.decode(j)))
+        else Inr(tDecoder.decode(j))
+      case e => throw new IllegalArgumentException(s"element $e is not an object")
+    }
+  }
+
+  // Generic
+  implicit def genericDecoder[A, R](implicit
     gen: LabelledGeneric.Aux[A, R],
     dec: Lazy[ElementDecoder[R]]): ElementDecoder[A] =
     primitive[A] { json: JsonElement =>
-      val hlist = dec.value.decode(json)
-      gen.from(hlist)
-    }
-
-  type CoproductMapType = Map[String, ElementDecoder[_]]
-
-  trait CoproductMap[F] {
-    def map: CoproductMapType
-  }
-
-  implicit val cnilMap: CoproductMap[CNil] =
-    new CoproductMap[CNil] {
-      override val map: CoproductMapType = Map.empty
-    }
-
-  implicit def coproductMap[K <: Symbol, H, T <: Coproduct](
-    implicit
-    witness: Witness.Aux[K],
-    hval: Lazy[ElementDecoder[H]],
-    tail: CoproductMap[T]): CoproductMap[FieldType[K, H] :+: T] = {
-    val name = witness.value.name
-    new CoproductMap[FieldType[K, H] :+: T] {
-      override val map: CoproductMapType = tail.map + (name -> hval.value)
-    }
-  }
-
-  implicit def coproductGeneric[A, R <: Coproduct](
-    implicit
-    gen: LabelledGeneric.Aux[A, R],
-    map: Lazy[CoproductMap[R]]): ElementDecoder[A] =
-    primitive[A] {
-      case j: JsonObject =>
-        val `type` = FieldDecoder[String].decode(j, "type")
-        map.value.map.get(`type`) match {
-          case Some(decoder) => decoder.decode(j).asInstanceOf[A]
-          case None => throw new IllegalArgumentException(s"unknown type ${`type`} in $j")
-        }
-      case e => throw new IllegalArgumentException(s"element $e is not an object")
+      gen.from(dec.value.decode(json))
     }
 }

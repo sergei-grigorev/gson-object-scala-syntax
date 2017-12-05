@@ -21,6 +21,8 @@ import com.github.sergeygrigorev.util.syntax.gson._
 import com.google.gson._
 import org.scalatest.FlatSpec
 
+import scala.collection.mutable
+
 /**
  * Examples and unit tests for [[com.github.sergeygrigorev.util.syntax]].
  */
@@ -71,14 +73,26 @@ class JsonObjectOpsTest extends FlatSpec {
     assert(jsonObject.find[JsonObject]("a").isEmpty)
   }
 
-  it should "decode list of primitives" in {
+  it should "decode sequences" in {
     val jsonObject = parse("{a: [1, 2, 3] }")
     assert(jsonObject.getAs[List[Int]]("a") == List(1, 2, 3))
+    assert(jsonObject.getAs[Set[Int]]("a") == Set(1, 2, 3))
+    assert(jsonObject.getAs[Stream[Int]]("a") == Stream(1, 2, 3))
+
+    import scala.collection.mutable
+    assert(jsonObject.getAs[mutable.Set[Int]]("a") == mutable.Set(1, 2, 3))
+    assert(jsonObject.getAs[mutable.ArrayBuffer[Int]]("a") == mutable.ArrayBuffer(1, 2, 3))
   }
 
-  it should "decode map of primitives" in {
+  it should "decode maps" in {
     val jsonObject = parse("{a: { b: 1, c: 2 } }")
-    assert(jsonObject.getAs[Map[String, Int]]("a") == Map("b" -> 1, "c" -> 2))
+    import scala.collection.immutable
+    assert(jsonObject.getAs[immutable.Map[String, Int]]("a") == immutable.Map("b" -> 1, "c" -> 2))
+    assert(jsonObject.getAs[immutable.TreeMap[String, Int]]("a") == immutable.TreeMap("b" -> 1, "c" -> 2))
+    assert(jsonObject.getAs[immutable.HashMap[String, Int]]("a") == immutable.HashMap("b" -> 1, "c" -> 2))
+
+    import scala.collection.mutable
+    assert(jsonObject.getAs[mutable.Map[String, Int]]("a") == mutable.Map("b" -> 1, "c" -> 2))
   }
 
   it should "decode custom type with manually created format" in {
